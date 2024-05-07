@@ -1,21 +1,22 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
+interface CoreVoiceSettings {
 	mySetting: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: CoreVoiceSettings = {
 	mySetting: 'default'
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class CoreVoice extends Plugin {
+	settings: CoreVoiceSettings;
 
 	async onload() {
 		await this.loadSettings();
-
+		this.addRibbonIcon("dice","Greet",() =>{
+			new Notice("Hello, world!");
+		});
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
@@ -108,9 +109,9 @@ class SampleModal extends Modal {
 }
 
 class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: CoreVoice;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: CoreVoice) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
