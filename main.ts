@@ -1,6 +1,10 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, Vault} from 'obsidian';
+import { MarkdownHelper } from 'MarkdownHelper';
+import { RegExHelper } from 'RegExHelper';
+import { MsAzureSpeechService } from 'MsAzureSpeechService';
+import * as sdk from "microsoft-cognitiveservices-speech-sdk";
+import * as dl from "audiofiles"
 // Remember to rename these classes and interfaces!
-
 interface CoreVoiceSettings {
 	mySetting: string;
 }
@@ -11,16 +15,32 @@ const DEFAULT_SETTINGS: CoreVoiceSettings = {
 
 export default class CoreVoice extends Plugin {
 	settings: CoreVoiceSettings;
-
+	private markdownhelper: MarkdownHelper;
+	private regexhelper: RegExHelper
+	private msazurespeechservice: MsAzureSpeechService
 	async onload() {
 		await this.loadSettings();
-		this.addRibbonIcon("dice","Greet",() =>{
-			new Notice("Hello, world!");
+		this.markdownhelper = new MarkdownHelper(this.app)
+		this.regexhelper=new RegExHelper()
+		this.addRibbonIcon("volume-2","sythesis and play",() =>{
+			const texting=this.markdownhelper.getMarkdownView()
+			this.regexhelper.setText(texting)
+			const texting_cleaned=this.regexhelper.getcleanContent()
+			this.msazurespeechservice=new MsAzureSpeechService()
+			this.msazurespeechservice.voiceGet(texting_cleaned)
+			const data = this.msazurespeechservice.getAudio()
+			const baseplayer = new sdk.BaseAudioPlayer()
+			baseplayer.playAudioSample(data)
+			new Notice(texting_cleaned)
 		});
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('file-audio', 'Spwan an audio', () => {
 			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+			const texting=this.markdownhelper.getMarkdownView()
+			this.regexhelper.setText(texting)
+			const texting_cleaned=this.regexhelper.getcleanContent()
+			dl.createAudio(texting_cleaned)
+			new Notice(texting_cleaned)
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
